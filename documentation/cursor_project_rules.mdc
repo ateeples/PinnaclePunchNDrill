@@ -1,0 +1,139 @@
+---
+description: Apply these rules when creating the project
+globs:
+alwaysApply: true
+---
+## Project Overview
+
+*   **Type:** Web-based time-tracking platform for construction companies
+*   **Description:** Aimed at field employees, foremen, and payroll staff in small to mid-sized construction firms. Focuses on accurate time recording, compliance, and streamlined payroll.
+*   **Primary Goal:** Implement geofenced, offline-capable time tracking with compliance rules and streamlined payroll processing
+
+## Project Structure
+
+### Framework-Specific Routing
+
+*   **Directory Rules:**
+    *   Next.js 14 (App Router): Use `app/[route]/page.tsx` with nested layouts for route segments
+    *   Next.js (Pages Router): Use `pages/[route].tsx` pattern (not used)
+    *   React Router 6: Use `src/routes/` with `createBrowserRouter` (not used)
+
+### Core Directories
+
+*   **Versioned Structure:**
+    *   `app`: Next.js 14 App Router root
+    *   `app/api`: Next.js 14 API routes with Route Handlers
+    *   `app/auth`: Authentication flows using Clerk (login, logout)
+    *   `app/dashboard`: Admin/Pay Manager dashboard with nested layouts
+    *   `app/foreman`: Foreman review and approval pages
+    *   `app/employee`: Employee-facing interfaces (clock-in/out, weekly summary)
+    *   `app/sites`: Geofence management (create/edit circle & polygon)
+    *   `public`: Static assets (brand logos, icons)
+    *   `styles`: Tailwind CSS configuration and global styles
+
+### Key Files
+
+*   **Stack-Versioned Patterns:**
+    *   `app/layout.tsx`: Next.js 14 root layout with Providers (ClerkProvider, SupabaseProvider) and global styles
+    *   `app/page.tsx`: Landing or dashboard redirect
+    *   `app/auth/login/page.tsx`: Server Component for Clerk login flow
+    *   `app/api/clock/[action]/route.ts`: Supabase Edge Function proxy for clock-in/out actions
+    *   `app/dashboard/layout.tsx`: Dashboard nested layout for Admin/Pay Manager
+    *   `app/employee/week-summary/page.tsx`: Weekly hours summary page
+    *   `styles/tailwind.config.js`: Tailwind CSS config with brand tokens
+
+## Tech Stack Rules
+
+*   **Version Enforcement:**
+    *   `next@14`: Enforce App Router, no use of `getInitialProps` or `pages/` directories
+    *   `react@18`: Use Hooks and Server Components best practices
+    *   `typescript@5`: Strict mode enabled, no `any`
+    *   `tailwindcss@3`: JIT mode, purge unused styles
+    *   `@shadcn/ui`: Follow theme integration via Tailwind
+    *   `supabase@2`: Use Row-Level Security (`policies.sql`), Edge Functions for serverless logic
+    *   `clerk@4`: Use Next.js middleware for auth, `authMiddleware.ts`
+    *   `vercel@latest`: Use environment variables via Vercel Dashboard, Preview Deployments
+    *   `twilio@4`: Rate-limit handling, idempotency tokens for SMS
+    *   `@sendgrid/mail@7`: Use transactional email templates
+    *   `openai@4`: Handle rate limits, use streaming for prompts (optional)
+
+## PRD Compliance
+
+*   **Non-Negotiable:**
+    *   "Geofenced clock-in/clock-out with multiple sites, circle/polygon support, and offline functionality with auto-sync.": Must implement offline sync and geofence logic in `app/employee/clock` using Supabase Edge Functions.
+    *   "Automatic time zone detection and adjustment.": Use `Intl.DateTimeFormat().resolvedOptions()` on client and normalize timestamps server-side.
+    *   "Detailed audit trail: log who made changes, when, and the reason.": Implement `audit_logs` table in PostgreSQL with triggers and expose via `app/api/audit/route.ts`.
+    *   "Configurable state-specific overtime rules, holiday pay, etc.": Store compliance rules in Supabase, build UI in `app/dashboard/settings/compliance`.
+    *   "Notifications (SMS/Email) for late clock-in, missed punch, approval requests, geofence exit, weekly summaries.": Use Supabase Edge Functions triggering Twilio and SendGrid.
+
+## App Flow Integration
+
+*   **Stack-Aligned Flow:**
+    *   Next.js 14 Auth Flow → `app/auth/login/page.tsx` uses server actions and Clerk middleware
+    *   Clock Flow → `app/employee/clock/page.tsx` with offline client component, sync via `app/api/clock/sync/route.ts`
+    *   Dashboard Flow → `app/dashboard/layout.tsx` + `app/dashboard/alerts/page.tsx` uses Supabase subscriptions
+    *   Geofence Management → `app/sites/[siteId]/page.tsx` with map rendering using client component
+    *   Export Flow → `app/api/export/[format]/route.ts` for CSV/Excel/PDF generation
+
+## Best Practices
+
+*   Next.js 14
+    *   Use App Router with nested layouts for shared UI elements
+    *   Employ Server Components for data-fetching; use client components only where interactivity is required
+    *   Leverage `generateMetadata` for SEO on dynamic routes
+*   Tailwind CSS
+    *   Use JIT mode and PurgeCSS to remove unused styles
+    *   Define custom theme colors for safety-orange, charcoal, light-gray in `tailwind.config.js`
+    *   Use utility-first classes for consistent spacing and responsive design
+*   Shadcn UI
+    *   Customize component themes via Tailwind tokens
+    *   Use accessible variants and follow WAI-ARIA guidelines
+*   Supabase
+    *   Enforce Row-Level Security policies for all tables
+    *   Use Edge Functions for complex server-side logic (clock-in, notifications)
+    *   Index geolocation columns for performant geofence queries
+*   Clerk
+    *   Protect routes using `requireAuth` server action
+    *   Use Clerk middleware for session handling
+*   Vercel
+    *   Store secrets in Environment Variables; use Preview Deployments for PR testing
+    *   Configure ISR and CDN caching for static assets
+*   Twilio & SendGrid
+    *   Implement retry logic and backoff for message/email delivery
+    *   Use templates and transactional messaging for consistency
+*   OpenAI (Optional)
+    *   Throttle requests; handle errors gracefully
+    *   Redact PII before sending to API
+*   Bolt & Cursor
+    *   Use Bolt for code scaffolding of common patterns (API endpoints, pages)
+    *   Leverage Cursor for in-editor AI suggestions aligned with project rules
+
+## Rules
+
+*   Derive folder/file patterns directly from `techStackDoc` versions.
+*   If Next.js 14 App Router: Enforce `app/` directory with nested route folders.
+*   If Pages Router: Use `pages/*.tsx` flat structure. (Not applicable)
+*   Mirror this logic for React Router, SvelteKit, etc.
+*   Never mix version patterns (e.g., no `pages/` in App Router projects).
+
+## Rules Metrics
+
+Before starting the project development, create a metrics file in the root of the project called
+
+`cursor_metrics.md`.
+
+### Instructions:
+
+*   Each time a cursor rule is used as context, update `cursor_metrics.md`.
+
+*   Use the following format for `cursor_metrics.md`:
+
+# Rules Metrics
+
+## Usage
+
+The number of times rules is used as context
+
+*   rule-name.mdc: 5
+*   another-rule.mdc: 2
+*   ...other rules
